@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quotation Generator</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f9fafb; margin: 0; padding: 10px; }
+    .container { background: #fff; padding: 15px; border-radius: 10px; max-width: 95%; margin: auto; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    h1 { text-align: center; font-size: 1.3rem; color: #1e3a8a; margin: 5px 0; }
+    p.company-address { text-align: center; font-size: 0.8rem; margin: 0 0 15px; color: #555; }
+    .form-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+    input { flex: 1; min-width: 120px; padding: 8px; border: 1px solid #ccc; border-radius: 6px; }
+    .item-list { display: flex; flex-direction: column; gap: 10px; }
+    .item-row { display: flex; flex-wrap: wrap; gap: 5px; border: 1px solid #ddd; padding: 8px; border-radius: 6px; background: #f3f4f6; }
+    .item-row input { flex: 1 1 45%; min-width: 120px; }
+    button { margin-top: 8px; padding: 10px; width: 100%; background: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; }
+    button:hover { background: #1e40af; }
+    .totals { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+    .totals input { width: 100%; text-align: right; }
+
+    @media (min-width: 600px) {
+      .item-row input { flex: 1 1 calc(14% - 8px); }
+      .totals { flex-direction: row; justify-content: flex-end; }
+      .totals input { max-width: 120px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img id="logo" src="logo.png" style="width:70px; display:block; margin:auto;">
+    <h1>Overall Medical Equipments Solution</h1>
+    <p class="company-address">Near Om Neelam Hotel, PTS Road, M.P-486001</p>
+
+    <div class="form-row">
+      <input type="text" id="invoiceNo" placeholder="Invoice No">
+      <input type="date" id="date">
+    </div>
+    <div class="form-row">
+      <input type="text" id="buyer" placeholder="Buyer Name">
+      <input type="text" id="address" placeholder="Buyer Address">
+    </div>
+
+    <div id="itemList" class="item-list">
+      <div class="item-row">
+        <input class="code" placeholder="Code">
+        <input class="desc" placeholder="Description">
+        <input class="hsn" placeholder="HSN">
+        <input class="qty" placeholder="Qty" oninput="calcAmount(this)">
+        <input class="rate" placeholder="Rate" oninput="calcAmount(this)">
+        <input class="per" placeholder="Per">
+        <input class="amt" placeholder="Amount" readonly>
+      </div>
+    </div>
+
+    <button onclick="addRow()">➕ Add Item</button>
+
+    <div class="totals">
+      <input type="number" id="cgst" placeholder="CGST %" oninput="calcTotal()">
+      <input type="number" id="sgst" placeholder="SGST %" oninput="calcTotal()">
+      <input type="text" id="subtotal" placeholder="Subtotal" readonly>
+      <input type="text" id="grandTotal" placeholder="Grand Total" readonly>
+    </div>
+
+    <button onclick="generatePDF()">📄 Generate PDF</button>
+  </div>
+
+  <script>
+    function addRow(){
+      const container=document.getElementById('itemList');
+      const firstRow=container.querySelector('.item-row');
+      const newRow=firstRow.cloneNode(true);
+      newRow.querySelectorAll('input').forEach(i=>i.value='');
+      container.appendChild(newRow);
+    }
+
+    function calcAmount(el){
+      const row=el.closest('.item-row');
+      const qty=parseFloat(row.querySelector('.qty').value||0);
+      const rate=parseFloat(row.querySelector('.rate').value||0);
+      row.querySelector('.amt').value=(qty*rate).toFixed(2);
+      calcTotal();
+    }
+
+    function calcTotal(){
+      let subtotal=0;
+      document.querySelectorAll('.amt').forEach(i=>subtotal+=parseFloat(i.value||0));
+      const cgst=parseFloat(document.getElementById('cgst').value||0);
+      const sgst=parseFloat(document.getElementById('sgst').value||0);
+      const tax=subtotal*(cgst+sgst)/100;
+      document.getElementById('subtotal').value=subtotal.toFixed(2);
+      document.getElementById('grandTotal').value=(subtotal+tax).toFixed(2);
+    }
+
+    function numberToWords(num){
+      const a=['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
+      const b=['','', 'Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+      function inWords(n){
+        if(n<20)return a[n];
+        if(n<100)return b[Math.floor(n/10)]+(n%10?" "+a[n%10]:"");
+        if(n<1000)return a[Math.floor(n/100)]+" Hundred"+(n%100?" "+inWords(n%100):"");
+        if(n<100000)return inWords(Math.floor(n/1000))+" Thousand"+(n%1000?" "+inWords(n%1000):"");
+        return n;
+      }
+      const intPart=Math.floor(num);
+      const decPart=Math.round((num-intPart)*100);
+      return inWords(intPart)+(decPart>0?` and ${decPart}/100`:'')+' Rupees Only';
+    }
+
+    function generatePDF(){
+      if(!window.jspdf){ alert('Failed to load jsPDF. Check your internet connection.'); return; }
+      const { jsPDF }=window.jspdf;
+      const doc=new jsPDF({unit:'mm',format:'a4'});
+      const logo=document.getElementById('logo');
+      try {
+        if(logo.complete) doc.addImage(logo,'PNG',95,5,20,20);
+      } catch(e) { console.warn('Logo not found or invalid'); }
+
+      doc.setFontSize(14);
+      doc.text("Overall Medical Equipment's - Quotation",105,30,{align:"center"});
+      doc.setFontSize(10);
+      doc.text("Near Om Neelam Hotel, PTS Road, M.P-486001",105,38,{align:"center"});
+
+      doc.setFontSize(11);
+      doc.text(`Invoice No: ${document.getElementById('invoiceNo').value}`,14,48);
+      doc.text(`Date: ${document.getElementById('date').value}`,150,48);
+      doc.text(`Buyer: ${document.getElementById('buyer').value}`,14,55);
+      doc.text(`Address: ${document.getElementById('address').value}`,14,62);
+
+      const data=[];
+      document.querySelectorAll('.item-row').forEach(r=>{
+        data.push([
+          r.querySelector('.code').value,
+          r.querySelector('.desc').value,
+          r.querySelector('.hsn').value,
+          r.querySelector('.qty').value,
+          r.querySelector('.rate').value,
+          r.querySelector('.per').value,
+          r.querySelector('.amt').value
+        ]);
+      });
+
+      doc.autoTable({
+        startY:70,
+        head:[['Code','Description','HSN','Qty','Rate','Per','Amount']],
+        body:data,
+        theme:'grid',
+        styles:{fontSize:9,cellPadding:3},
+        headStyles:{fillColor:[41,128,185],halign:'center'},
+      });
+
+      let finalY = doc.lastAutoTable.finalY + 10;
+      const subtotal=parseFloat(document.getElementById('subtotal').value||0);
+      const cgst=parseFloat(document.getElementById('cgst').value||0);
+      const sgst=parseFloat(document.getElementById('sgst').value||0);
+      const grandTotal=parseFloat(document.getElementById('grandTotal').value||0);
+
+      doc.text(`Subtotal: ${subtotal.toFixed(2)}`, 150, finalY);
+      doc.text(`CGST (${cgst}%): ${(subtotal*cgst/100).toFixed(2)}`, 150, finalY+6);
+      doc.text(`SGST (${sgst}%): ${(subtotal*sgst/100).toFixed(2)}`, 150, finalY+12);
+      doc.text(`Grand Total: ${grandTotal.toFixed(2)}`, 150, finalY+20);
+      doc.text(`Amount in Words: ${numberToWords(grandTotal)}`, 14, finalY+30);
+
+      doc.setFontSize(9);
+      doc.text("Declaration: 50% Advance + 50% before Dispatch. Goods once sold will not be taken back.", 14, finalY+45);
+      doc.text("Authorized Signature", 160, finalY+65);
+
+      doc.save('quotation.pdf');
+    }
+  </script>
+</body>
+</html>

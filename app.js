@@ -214,39 +214,30 @@ function getCalculatedValues() {
   };
 }
 
-// Helper to safely set input value without losing cursor position or closing the keyboard
-function safeSetVal(id, val) {
-  const el = document.getElementById(id);
-  if (el && document.activeElement !== el) {
-    el.value = val;
-  }
+// Set initial values for metadata and supplier inputs on page load
+function initializeEditorValues() {
+  document.getElementById('input-billNumber').value = invoiceState.meta.billNumber;
+  document.getElementById('input-dateOfIssue').value = invoiceState.meta.dateOfIssue;
+  document.getElementById('input-quotationNo').value = invoiceState.meta.quotationNo;
+  document.getElementById('input-buyerName').value = invoiceState.buyer.name;
+  document.getElementById('input-buyerAddress').value = invoiceState.buyer.address;
+  document.getElementById('input-buyerGstin').value = invoiceState.buyer.gstin;
+  document.getElementById('input-taxRate').value = invoiceState.taxRate;
+
+  document.getElementById('input-supplierGstin').value = invoiceState.supplier.gstin;
+  document.getElementById('input-supplierName').value = invoiceState.supplier.name;
+  document.getElementById('input-supplierSubName').value = invoiceState.supplier.subName;
+  document.getElementById('input-supplierAddress').value = invoiceState.supplier.address;
+  document.getElementById('input-supplierPinCode').value = invoiceState.supplier.pinCode;
+  document.getElementById('input-supplierEmail').value = invoiceState.supplier.email;
+  document.getElementById('input-supplierPhone').value = invoiceState.supplier.phone;
+  document.getElementById('input-bankName').value = invoiceState.supplier.bankName;
+  document.getElementById('input-accountNo').value = invoiceState.supplier.accountNo;
+  document.getElementById('input-branchIfsc').value = invoiceState.supplier.branchIfsc;
 }
 
-// Render the form and the live preview
-function render() {
-  const calc = getCalculatedValues();
-
-  // 1. Render Editor Panel State safely
-  safeSetVal('input-billNumber', invoiceState.meta.billNumber);
-  safeSetVal('input-dateOfIssue', invoiceState.meta.dateOfIssue);
-  safeSetVal('input-quotationNo', invoiceState.meta.quotationNo);
-  safeSetVal('input-buyerName', invoiceState.buyer.name);
-  safeSetVal('input-buyerAddress', invoiceState.buyer.address);
-  safeSetVal('input-buyerGstin', invoiceState.buyer.gstin);
-  safeSetVal('input-taxRate', invoiceState.taxRate);
-
-  // Supplier Settings safely
-  safeSetVal('input-supplierGstin', invoiceState.supplier.gstin);
-  safeSetVal('input-supplierName', invoiceState.supplier.name);
-  safeSetVal('input-supplierSubName', invoiceState.supplier.subName);
-  safeSetVal('input-supplierAddress', invoiceState.supplier.address);
-  safeSetVal('input-supplierPinCode', invoiceState.supplier.pinCode);
-  safeSetVal('input-supplierEmail', invoiceState.supplier.email);
-  safeSetVal('input-supplierPhone', invoiceState.supplier.phone);
-  safeSetVal('input-bankName', invoiceState.supplier.bankName);
-  safeSetVal('input-accountNo', invoiceState.supplier.accountNo);
-  safeSetVal('input-branchIfsc', invoiceState.supplier.branchIfsc);
-
+// Update the layout of the editor (classes and visibility) only when the document type switches
+function updateDocTypeLayout() {
   // Update Segmented Control Button Classes
   const invoiceBtn = document.getElementById('btn-docType-invoice');
   const quotationBtn = document.getElementById('btn-docType-quotation');
@@ -278,6 +269,11 @@ function render() {
     if (labelQuotationNo) labelQuotationNo.innerText = "Quotation Number";
     if (metadataGrid) metadataGrid.className = "grid grid-cols-1 gap-4";
   }
+}
+
+// Render the form and the live preview (only updates right A4 preview to prevent losing active focus)
+function render() {
+  const calc = getCalculatedValues();
 
   // Note: Editor items rows are rendered separately by renderEditorItems() to prevent losing input focus.
 

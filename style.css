@@ -1,0 +1,146 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --font-header: 'Outfit', sans-serif;
+  --font-body: 'Inter', sans-serif;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: #0f172a; /* Slate 900 */
+  color: #f1f5f9; /* Slate 100 */
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-header);
+}
+
+/* Glassmorphism card utility */
+.glass-panel {
+  background: rgba(30, 41, 59, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Custom Scrollbar for modern aesthetics */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.6);
+}
+
+/* Form input adjustments */
+.custom-input {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #f8fafc;
+  transition: all 0.2s ease;
+}
+
+.custom-input:focus {
+  outline: none;
+  border-color: #6366f1; /* Indigo 500 */
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+  background: rgba(15, 23, 42, 0.8);
+}
+
+/* Real-time PDF Preview A4 Sheet mockup styling */
+.preview-sheet {
+  width: 210mm;
+  min-height: 297mm;
+  padding: 15mm 15mm 25mm 15mm;
+  background: #ffffff;
+  color: #1e293b; /* Slate 800 */
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  font-size: 11pt;
+  line-height: 1.4;
+  margin: 0 auto;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.preview-sheet table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.preview-sheet th {
+  background-color: #f1f5f9;
+  color: #0f172a;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 8.5pt;
+  border: 1px solid #cbd5e1;
+  padding: 6px 8px;
+}
+
+.preview-sheet td {
+  border: 1px solid #cbd5e1;
+  padding: 6px 8px;
+  font-size: 9.5pt;
+  vertical-align: top;
+}
+
+/* Micro-animations */
+.fade-in {
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Shake animation for incorrect password feedback */
+.shake {
+  animation: shake 0.4s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0) scale(1); }
+  20%, 60% { transform: translateX(-8px) scale(0.99); }
+  40%, 80% { transform: translateX(8px) scale(0.99); }
+}
+
+/* Print Stylesheet for exact A4 paper outputs directly via browser Print (Ctrl+P) */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-area {
+    display: block !important;
+    width: 210mm !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+  }
+  
+  .preview-sheet {
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    min-height: auto !important;
+  }
+}

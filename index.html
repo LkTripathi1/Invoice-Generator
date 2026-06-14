@@ -3,173 +3,439 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quotation Generator</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; background: #f9fafb; margin: 0; padding: 10px; }
-    .container { background: #fff; padding: 15px; border-radius: 10px; max-width: 95%; margin: auto; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-    h1 { text-align: center; font-size: 1.3rem; color: #1e3a8a; margin: 5px 0; }
-    p.company-address { text-align: center; font-size: 0.8rem; margin: 0 0 15px; color: #555; }
-    .form-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
-    input { flex: 1; min-width: 120px; padding: 8px; border: 1px solid #ccc; border-radius: 6px; }
-    .item-list { display: flex; flex-direction: column; gap: 10px; }
-    .item-row { display: flex; flex-wrap: wrap; gap: 5px; border: 1px solid #ddd; padding: 8px; border-radius: 6px; background: #f3f4f6; }
-    .item-row input { flex: 1 1 45%; min-width: 120px; }
-    button { margin-top: 8px; padding: 10px; width: 100%; background: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; }
-    button:hover { background: #1e40af; }
-    .totals { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
-    .totals input { width: 100%; text-align: right; }
-
-    @media (min-width: 600px) {
-      .item-row input { flex: 1 1 calc(14% - 8px); }
-      .totals { flex-direction: row; justify-content: flex-end; }
-      .totals input { max-width: 120px; }
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <!-- Changed to .jpg -->
-    <img id="logo" src="images/logo.jpg" style="width:70px; display:block; margin:auto;">
-    <h1>Overall Medical Equipments Solution</h1>
-    <p class="company-address">Near Om Neelam Hotel, PTS Road, M.P-486001</p>
-
-    <div class="form-row">
-      <input type="text" id="invoiceNo" placeholder="Invoice No">
-      <input type="date" id="date">
-    </div>
-    <div class="form-row">
-      <input type="text" id="buyer" placeholder="Buyer Name">
-      <input type="text" id="address" placeholder="Buyer Address">
-    </div>
-
-    <div id="itemList" class="item-list">
-      <div class="item-row">
-        <input class="code" placeholder="Code">
-        <input class="desc" placeholder="Description">
-        <input class="hsn" placeholder="HSN">
-        <input class="qty" placeholder="Qty" oninput="calcAmount(this)">
-        <input class="rate" placeholder="Rate" oninput="calcAmount(this)">
-        <input class="per" placeholder="Per">
-        <input class="amt" placeholder="Amount" readonly>
-      </div>
-    </div>
-
-    <button onclick="addRow()">➕ Add Item</button>
-
-    <div class="totals">
-      <input type="number" id="cgst" placeholder="CGST %" oninput="calcTotal()">
-      <input type="number" id="sgst" placeholder="SGST %" oninput="calcTotal()">
-      <input type="text" id="subtotal" placeholder="Subtotal" readonly>
-      <input type="text" id="grandTotal" placeholder="Grand Total" readonly>
-    </div>
-
-    <button onclick="generatePDF()">📄 Generate PDF</button>
-  </div>
-
+  <title>OVERALL Medical - Professional Tax Invoice Generator</title>
+  
+  <!-- CSS Stylesheets -->
+  <link href="style.css" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    function addRow(){
-      const container=document.getElementById('itemList');
-      const firstRow=container.querySelector('.item-row');
-      const newRow=firstRow.cloneNode(true);
-      newRow.querySelectorAll('input').forEach(i=>i.value='');
-      container.appendChild(newRow);
-    }
-
-    function calcAmount(el){
-      const row=el.closest('.item-row');
-      const qty=parseFloat(row.querySelector('.qty').value||0);
-      const rate=parseFloat(row.querySelector('.rate').value||0);
-      row.querySelector('.amt').value=(qty*rate).toFixed(2);
-      calcTotal();
-    }
-
-    function calcTotal(){
-      let subtotal=0;
-      document.querySelectorAll('.amt').forEach(i=>subtotal+=parseFloat(i.value||0));
-      const cgst=parseFloat(document.getElementById('cgst').value||0);
-      const sgst=parseFloat(document.getElementById('sgst').value||0);
-      const tax=subtotal*(cgst+sgst)/100;
-      document.getElementById('subtotal').value=subtotal.toFixed(2);
-      document.getElementById('grandTotal').value=(subtotal+tax).toFixed(2);
-    }
-
-    function numberToWords(num){
-      const a=['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
-      const b=['','', 'Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
-      function inWords(n){
-        if(n<20)return a[n];
-        if(n<100)return b[Math.floor(n/10)]+(n%10?" "+a[n%10]:"");
-        if(n<1000)return a[Math.floor(n/100)]+" Hundred"+(n%100?" "+inWords(n%100):"");
-        if(n<100000)return inWords(Math.floor(n/1000))+" Thousand"+(n%1000?" "+inWords(n%1000):"");
-        return n;
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brandBlue: '#2980b9',
+            brandRed: '#e74c3c',
+          }
+        }
       }
-      const intPart=Math.floor(num);
-      const decPart=Math.round((num-intPart)*100);
-      return inWords(intPart)+(decPart>0?` and ${decPart}/100`:'')+' Rupees Only';
-    }
-
-    function generatePDF(){
-      if(!window.jspdf){ alert('Failed to load jsPDF. Check your internet connection.'); return; }
-      const { jsPDF }=window.jspdf;
-      const doc=new jsPDF({unit:'mm',format:'a4'});
-      const logo=document.getElementById('logo');
-      try {
-        if(logo.complete) doc.addImage(logo,'JPEG',95,5,20,20); // changed to JPEG
-      } catch(e) { console.warn('Logo not found or invalid'); }
-
-      doc.setFontSize(14);
-      doc.text("Overall Medical Equipments Solution",105,30,{align:"center"});
-      doc.setFontSize(10);
-      doc.text("Near Om Neelam Hotel, PTS Road, M.P-486001",105,38,{align:"center"});
-
-      doc.setFontSize(11);
-      doc.text(`Invoice No: ${document.getElementById('invoiceNo').value}`,14,48);
-      doc.text(`Date: ${document.getElementById('date').value}`,150,48);
-      doc.text(`Buyer: ${document.getElementById('buyer').value}`,14,55);
-      doc.text(`Address: ${document.getElementById('address').value}`,14,62);
-
-      const data=[];
-      document.querySelectorAll('.item-row').forEach(r=>{
-        data.push([
-          r.querySelector('.code').value,
-          r.querySelector('.desc').value,
-          r.querySelector('.hsn').value,
-          r.querySelector('.qty').value,
-          r.querySelector('.rate').value,
-          r.querySelector('.per').value,
-          r.querySelector('.amt').value
-        ]);
-      });
-
-      doc.autoTable({
-        startY:70,
-        head:[['Code','Description','HSN','Qty','Rate','Per','Amount']],
-        body:data,
-        theme:'grid',
-        styles:{fontSize:9,cellPadding:3},
-        headStyles:{fillColor:[41,128,185],halign:'center'},
-      });
-
-      let finalY = doc.lastAutoTable.finalY + 10;
-      const subtotal=parseFloat(document.getElementById('subtotal').value||0);
-      const cgst=parseFloat(document.getElementById('cgst').value||0);
-      const sgst=parseFloat(document.getElementById('sgst').value||0);
-      const grandTotal=parseFloat(document.getElementById('grandTotal').value||0);
-
-      doc.text(`Subtotal: ${subtotal.toFixed(2)}`, 150, finalY);
-      doc.text(`CGST (${cgst}%): ${(subtotal*cgst/100).toFixed(2)}`, 150, finalY+6);
-      doc.text(`SGST (${sgst}%): ${(subtotal*sgst/100).toFixed(2)}`, 150, finalY+12);
-      doc.text(`Grand Total: ${grandTotal.toFixed(2)}`, 150, finalY+20);
-      doc.text(`Amount in Words: ${numberToWords(grandTotal)}`, 14, finalY+30);
-
-      doc.setFontSize(9);
-      doc.text("Declaration: 50% Advance + 50% before Dispatch. Goods once sold will not be taken back.", 14, finalY+45);
-      doc.text("Authorized Signature", 160, finalY+65);
-
-      doc.save('quotation.pdf');
     }
   </script>
+  
+  <!-- jsPDF & jsPDF AutoTable Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body class="bg-slate-950 font-sans selection:bg-indigo-500/30">
+
+  <!-- Restricted Access Login Overlay -->
+  <div id="login-overlay" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/95 backdrop-blur-2xl transition-all duration-500 px-4">
+    <div id="login-card" class="w-full max-w-md p-6 sm:p-8 rounded-3xl border border-slate-800/60 bg-slate-900/40 shadow-2xl backdrop-blur-md transition-all duration-300 transform scale-100 flex flex-col gap-6 select-none">
+      
+      <!-- Brand Logo & Header -->
+      <div class="flex flex-col items-center text-center gap-3">
+        <div class="h-14 w-14 rounded-2xl bg-gradient-to-tr from-brandBlue to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-2xl font-bold text-white tracking-tight">OVERALL Medical</h2>
+          <p class="text-xs text-slate-400 font-medium mt-1">Authorized Access Only. Please sign in to continue.</p>
+        </div>
+      </div>
+
+      <!-- Login Form -->
+      <form id="login-form" onsubmit="handleLogin(event)" class="flex flex-col gap-4">
+        <!-- Error Message Alert Box -->
+        <div id="login-error" class="hidden px-4 py-3 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-300 text-xs font-semibold flex items-center gap-2 fade-in">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5 text-rose-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <span id="login-error-text">Invalid email or password.</span>
+        </div>
+
+        <div>
+          <label for="login-email" class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Email Address</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.206" />
+              </svg>
+            </span>
+            <input type="email" id="login-email" required class="w-full pl-11 pr-4 py-3 rounded-xl custom-input text-sm" placeholder="admin@overallmedical.com">
+          </div>
+        </div>
+
+        <div>
+          <label for="login-password" class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Password</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </span>
+            <input type="password" id="login-password" required class="w-full pl-11 pr-4 py-3 rounded-xl custom-input text-sm" placeholder="••••••••">
+          </div>
+        </div>
+
+        <button type="submit" class="w-full mt-2 py-3 bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 transition duration-300 flex items-center justify-center gap-2">
+          Sign In
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+          </svg>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Header / Navigation Bar -->
+  <header class="no-print border-b border-slate-800/80 bg-slate-900/90 sticky top-0 z-50 backdrop-blur-md px-6 py-4">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <!-- Logo Icon -->
+        <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-brandBlue to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5.5 w-5.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-1">
+            OVERALL <span class="text-indigo-400 font-medium text-sm">Invoice Generator</span>
+          </h1>
+          <p class="text-xs text-slate-400">Create & download professional tax invoices instantly</p>
+        </div>
+      </div>
+      
+      <!-- Top Action Buttons -->
+      <div class="flex items-center gap-3">
+        <button onclick="downloadInvoicePDF()" class="px-4 py-2 bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700 text-white rounded-lg text-sm font-semibold shadow-md shadow-indigo-500/10 hover:shadow-indigo-500/25 transition duration-200 flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          Download PDF
+        </button>
+        <button onclick="window.print()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white rounded-lg text-sm font-medium border border-slate-700/60 transition duration-200 flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-3a2 2 0 00-2-2H9a2 2 0 00-2 2v3a2 2 0 002 2zm0 0v-9a2 2 0 012-2h2a2 2 0 012 2v9m-4 0h4" />
+          </svg>
+          Print (Ctrl+P)
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Layout -->
+  <div class="max-w-7xl mx-auto px-4 md:px-6 py-6 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+    
+    <!-- LEFT PANEL: Editor Forms (no-print) -->
+    <div class="no-print lg:col-span-5 flex flex-col gap-6">
+      
+      <!-- Panel Header -->
+      <div class="flex items-center justify-between">
+        <h2 id="editor-panel-title" class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+          <span class="inline-block w-1 h-6 bg-indigo-500 rounded"></span>
+          Invoice Details Editor
+        </h2>
+        <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/25">Live Editor</span>
+      </div>
+
+      <!-- Document Type Selector Segmented Control -->
+      <div class="glass-panel rounded-2xl p-1.5 shadow-xl flex gap-1">
+        <button id="btn-docType-invoice" onclick="switchDocType('invoice')" class="flex-1 py-2 px-3 text-center rounded-xl text-xs sm:text-sm font-bold transition duration-200 bg-gradient-to-r from-indigo-500 to-blue-600 text-white shadow-md shadow-indigo-500/15">
+          Tax Invoice
+        </button>
+        <button id="btn-docType-quotation" onclick="switchDocType('quotation')" class="flex-1 py-2 px-3 text-center rounded-xl text-xs sm:text-sm font-semibold transition duration-200 text-slate-400 hover:text-slate-200 hover:bg-slate-800/40">
+          Quotation
+        </button>
+      </div>
+
+      <!-- Section 1: Basic Metadata -->
+      <div class="glass-panel rounded-2xl p-5 shadow-xl flex flex-col gap-4">
+        <h3 id="metadata-header-title" class="text-sm font-bold text-indigo-400 tracking-wider uppercase">1. Document Identifiers</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="metadata-grid">
+          <div id="container-billNumber">
+            <label for="input-billNumber" class="block text-xs font-semibold text-slate-400 mb-1.5">Bill / Invoice Number</label>
+            <input type="text" id="input-billNumber" oninput="updateMetaField('billNumber', this.value)" class="w-full custom-input px-3.5 py-2 rounded-xl text-sm">
+          </div>
+          <div id="container-dateOfIssue">
+            <label id="label-dateOfIssue" for="input-dateOfIssue" class="block text-xs font-semibold text-slate-400 mb-1.5">Date of Issue</label>
+            <input type="date" id="input-dateOfIssue" oninput="updateMetaField('dateOfIssue', this.value)" class="w-full custom-input px-3.5 py-2 rounded-xl text-sm">
+          </div>
+        </div>
+        <div>
+          <label id="label-quotationNo" for="input-quotationNo" class="block text-xs font-semibold text-slate-400 mb-1.5">Quotation Number (Optional)</label>
+          <input type="text" id="input-quotationNo" oninput="updateMetaField('quotationNo', this.value)" class="w-full custom-input px-3.5 py-2 rounded-xl text-sm" placeholder="e.g. Q-2026-081">
+        </div>
+      </div>
+
+      <!-- Section 2: Buyer details -->
+      <div class="glass-panel rounded-2xl p-5 shadow-xl flex flex-col gap-4">
+        <h3 class="text-sm font-bold text-indigo-400 tracking-wider uppercase">2. Buyer (Bill To) Information</h3>
+        <div>
+          <label for="input-buyerName" class="block text-xs font-semibold text-slate-400 mb-1.5">Buyer Name / Institution</label>
+          <input type="text" id="input-buyerName" oninput="updateField('buyer', 'name', this.value)" class="w-full custom-input px-3.5 py-2 rounded-xl text-sm" placeholder="e.g. Hospital Name">
+        </div>
+        <div>
+          <label for="input-buyerAddress" class="block text-xs font-semibold text-slate-400 mb-1.5">Buyer Address</label>
+          <textarea id="input-buyerAddress" oninput="updateField('buyer', 'address', this.value)" class="w-full custom-input px-3.5 py-2 rounded-xl text-sm h-18 resize-none" placeholder="e.g. City, State, Pin Code"></textarea>
+        </div>
+        <div>
+          <label for="input-buyerGstin" class="block text-xs font-semibold text-slate-400 mb-1.5">Buyer GSTIN</label>
+          <input type="text" id="input-buyerGstin" oninput="updateField('buyer', 'gstin', this.value)" class="w-full custom-input px-3.5 py-2 rounded-xl text-sm" placeholder="15-digit GSTIN Code">
+        </div>
+      </div>
+
+      <!-- Section 3: Products / Line Items -->
+      <div class="glass-panel rounded-2xl p-5 shadow-xl flex flex-col gap-4">
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-bold text-indigo-400 tracking-wider uppercase">3. Products & Services</h3>
+          <button onclick="addNewItem()" class="px-3 py-1.5 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-semibold rounded-lg shadow-md hover:shadow-indigo-500/20 transition duration-150 flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Add Product
+          </button>
+        </div>
+        
+        <!-- Items Container -->
+        <div id="editor-items-container" class="flex flex-col gap-3 max-h-[450px] overflow-y-auto pr-1">
+          <!-- Populated dynamically by app.js -->
+        </div>
+
+        <!-- CGST / SGST rate settings -->
+        <div class="border-t border-slate-700/60 pt-4 mt-2">
+          <label for="input-taxRate" class="block text-xs font-semibold text-slate-400 mb-1.5">Tax Rate (CGST % & SGST % each)</label>
+          <div class="flex items-center gap-3">
+            <input type="number" step="0.1" id="input-taxRate" oninput="updateField('taxRate', null, this.value)" class="w-32 custom-input px-3.5 py-2 rounded-xl text-sm">
+            <span class="text-xs text-slate-400">Note: A value of 2.5 means 2.5% CGST + 2.5% SGST (Total 5% GST).</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Expandable Supplier Configurations -->
+      <details class="glass-panel rounded-2xl p-5 shadow-xl group cursor-pointer">
+        <summary class="flex items-center justify-between font-bold text-sm tracking-wider uppercase text-slate-300 list-none outline-none select-none">
+          <span>4. Supplier Settings (Static Headers)</span>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5 text-slate-400 group-open:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </summary>
+        
+        <div class="flex flex-col gap-4 mt-5 cursor-default" onclick="event.stopPropagation()">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label for="input-supplierName" class="block text-xs font-semibold text-slate-400 mb-1.5">Supplier Name (Primary)</label>
+              <input type="text" id="input-supplierName" oninput="updateField('supplier', 'name', this.value)" class="w-full custom-input px-3.5 py-2 rounded-xl text-sm">
+            </div>
+            <div>
+              <label for="input-supplierSubName" class="block text-xs font-semibold text-slate-400 mb-1.5">Supplier Name (Secondary)</label>
+              <input type="text" id="input-supplierSubName" oninput="updateField('supplier', 'subName', this.value)" class="w-full custom-input px-3.5 py-2 rounded-xl text-sm">
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label for="input-supplierGstin" class="block text-xs font-semibold text-slate-400 mb-1.5">Supplier GSTIN</label>
+              <input type="text" id="input-supplierGstin" oninput="updateField('supplier', 'gstin', this.value)" class="w-full custom-input px-3.5 py-2 rounded-xl text-sm">
+            </div>
+            <div>
+              <label for="input-supplierPhone" class="block text-xs font-semibold text-slate-400 mb-1.5">Supplier Phone Number</label>
+              <input type="text" id="input-supplierPhone" oninput="updateField('supplier', 'phone', this.value)" class="w-full custom-input px-3.5 py-2 rounded-xl text-sm">
+            </div>
+          </div>
+          <div>
+            <label for="input-supplierAddress" class="block text-xs font-semibold text-slate-400 mb-1.5">Supplier Office Address</label>
+            <input type="text" id="input-supplierAddress" oninput="updateField('supplier', 'address', this.value)" class="w-full custom-input px-3.5 py-2 rounded-xl text-sm">
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label for="input-supplierPinCode" class="block text-xs font-semibold text-slate-400 mb-1.5">Pin Code</label>
+              <input type="text" id="input-supplierPinCode" oninput="updateField('supplier', 'pinCode', this.value)" class="w-full custom-input px-3.5 py-2 rounded-xl text-sm">
+            </div>
+            <div>
+              <label for="input-supplierEmail" class="block text-xs font-semibold text-slate-400 mb-1.5">Supplier Email</label>
+              <input type="email" id="input-supplierEmail" oninput="updateField('supplier', 'email', this.value)" class="w-full custom-input px-3.5 py-2 rounded-xl text-sm">
+            </div>
+          </div>
+
+          <h4 class="text-xs font-bold text-indigo-400 uppercase tracking-wider mt-2 border-b border-slate-700/60 pb-1">Supplier Bank Details</h4>
+          <div>
+            <label for="input-bankName" class="block text-xs font-semibold text-slate-400 mb-1.5">Bank Name</label>
+            <input type="text" id="input-bankName" oninput="updateField('supplier', 'bankName', this.value)" class="w-full custom-input px-3.5 py-2 rounded-xl text-sm">
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label for="input-accountNo" class="block text-xs font-semibold text-slate-400 mb-1.5">Account Number</label>
+              <input type="text" id="input-accountNo" oninput="updateField('supplier', 'accountNo', this.value)" class="w-full custom-input px-3.5 py-2 rounded-xl text-sm">
+            </div>
+            <div>
+              <label for="input-branchIfsc" class="block text-xs font-semibold text-slate-400 mb-1.5">Branch & IFSC Code</label>
+              <input type="text" id="input-branchIfsc" oninput="updateField('supplier', 'branchIfsc', this.value)" class="w-full custom-input px-3.5 py-2 rounded-xl text-sm">
+            </div>
+          </div>
+        </div>
+      </details>
+      
+    </div>
+
+    <!-- RIGHT PANEL: Live A4 Printable Preview -->
+    <div class="lg:col-span-7 print-area">
+      
+      <!-- Panel Header (Hidden on Print) -->
+      <div class="no-print flex items-center justify-between mb-4">
+        <h2 class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+          <span class="inline-block w-1 h-6 bg-blue-500 rounded"></span>
+          Real-time Print Preview
+        </h2>
+        <span class="text-xs text-slate-400">Scale: A4 Document Portrait</span>
+      </div>
+
+      <!-- Zoom/Scale Container for A4 Mockup -->
+      <div class="overflow-x-auto lg:overflow-x-visible w-full py-2 bg-slate-900 rounded-3xl p-4 lg:p-6 border border-slate-800 shadow-2xl">
+        
+        <!-- The Actual Document Mockup Sheet -->
+        <div id="invoice-printable-sheet" class="preview-sheet shadow-2xl">
+          
+          <!-- Top GSTIN and Brand Title Header -->
+          <div class="flex justify-between items-center border-b border-slate-300 pb-3 mb-3">
+            <div>
+              <span class="text-[8.5pt] font-bold tracking-wide text-slate-800">GSTIN – <span id="preview-gstin">23BZPPR0632A1ZP</span></span>
+            </div>
+            <div class="text-right">
+              <img id="preview-logo-img" src="logo.jpg" alt="OVERALL Medical" style="height: 100px;" class="object-contain ml-auto w-auto" onerror="this.style.display='none'; document.getElementById('preview-logo-text').style.display='block';">
+              <div id="preview-logo-text" class="hidden">
+                <span class="text-[13pt] font-extrabold tracking-tight text-brandBlue uppercase block leading-none" id="preview-supplier-name-bold">OVERALL</span>
+                <span class="text-[8.5pt] font-semibold text-brandRed tracking-wide" id="preview-supplier-name-sub">Equipment's solution</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Invoice Title Header -->
+          <div class="text-center my-3">
+            <h2 class="text-[13pt] font-bold text-slate-800 uppercase tracking-widest border-b-2 border-slate-800 inline-block px-4 pb-0.5">Tax invoice</h2>
+          </div>
+
+          <!-- Meta Blocks Info (Buyer on Left, Metadata on Right) -->
+          <div class="grid grid-cols-2 gap-4 mb-4 mt-2">
+            <!-- Buyer Block -->
+            <div class="border border-slate-300 p-2.5 rounded min-h-[95px] flex flex-col justify-start">
+              <span class="text-[8.5pt] font-bold text-slate-600 block mb-1">Buyer (Bill To)</span>
+              <span class="text-[9.5pt] font-bold text-slate-800 leading-tight block" id="preview-buyer-name">Saudamini Multispeciality Hospital,Rewa</span>
+              <span class="text-[9pt] text-slate-700 leading-normal mt-1 block" id="preview-buyer-address">Madhyapradesh - 486001</span>
+              <span class="text-[9pt] font-bold text-slate-800 mt-1 block" id="preview-buyer-gstin">(GSTIN -23ABPCS9276F1ZT )</span>
+            </div>
+            
+            <!-- Metadata details -->
+            <div class="border border-slate-300 p-2.5 rounded min-h-[95px] flex flex-col justify-between">
+              <div class="flex justify-between items-center text-[9pt]">
+                <span class="font-bold text-slate-600">Bill Number :</span>
+                <span class="font-bold text-slate-900" id="preview-bill-number">0032</span>
+              </div>
+              <div class="flex justify-between items-center text-[9pt]">
+                <span class="font-bold text-slate-600">Date of Issue :</span>
+                <span class="font-medium text-slate-900" id="preview-date-issue">29-03-2026</span>
+              </div>
+              <div class="flex justify-between items-center text-[9pt]">
+                <span class="font-bold text-slate-600">Quotation No :</span>
+                <span class="font-medium text-slate-900" id="preview-quotation-no">—</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Product Table Area -->
+          <div class="min-h-[300px] border border-slate-300 rounded overflow-hidden">
+            <table>
+              <thead>
+                <tr id="preview-table-header">
+                  <!-- Rendered dynamically by app.js based on docType -->
+                </tr>
+              </thead>
+              <tbody id="preview-table-body" class="divide-y divide-slate-200">
+                <!-- Dynamically rendered by app.js -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Calculations and Bank Info Blocks -->
+          <div class="grid grid-cols-2 mt-4 border border-slate-300 rounded overflow-hidden">
+            
+            <!-- Bank Details (Left Panel) -->
+            <div class="p-3 border-r border-slate-300 flex flex-col justify-start">
+              <span class="text-[8.5pt] font-bold text-slate-700 block mb-2 border-b border-slate-200 pb-1">Company's Bank Details</span>
+              
+              <div class="flex items-center gap-1.5 text-[8.5pt] mb-1.5">
+                <span class="font-bold text-slate-600">Bank Name:</span>
+                <span class="font-medium text-slate-800" id="preview-bank-name">Indian Bank</span>
+              </div>
+              <div class="flex items-center gap-1.5 text-[8.5pt] mb-1.5">
+                <span class="font-bold text-slate-600">A/C No.:</span>
+                <span class="font-bold text-slate-800" id="preview-account-number">8125428573</span>
+              </div>
+              <div class="flex items-center gap-1.5 text-[8.5pt]">
+                <span class="font-bold text-slate-600">Branch & IFSC:</span>
+                <span class="font-medium text-slate-800" id="preview-branch-ifsc">Amarpatan & IDIB000A592</span>
+              </div>
+            </div>
+
+            <!-- Tax Computations (Right Panel) -->
+            <div class="divide-y divide-slate-300">
+              <div class="flex justify-between items-center px-3 py-1.5 text-[9pt]">
+                <span class="font-medium text-slate-600">Total Amount</span>
+                <span class="font-bold text-slate-900" id="preview-total-amount">0.00</span>
+              </div>
+              <div class="flex justify-between items-center px-3 py-1.5 text-[9pt]">
+                <span class="font-medium text-slate-600">CGST (<span id="preview-cgst-percent">2.5%</span>)</span>
+                <span class="font-semibold text-slate-800" id="preview-cgst-amount">0.00</span>
+              </div>
+              <div class="flex justify-between items-center px-3 py-1.5 text-[9pt]">
+                <span class="font-medium text-slate-600">SGST (<span id="preview-sgst-percent">2.5%</span>)</span>
+                <span class="font-semibold text-slate-800" id="preview-sgst-amount">0.00</span>
+              </div>
+              <div class="flex justify-between items-center px-3 py-2 bg-slate-50 text-[9.5pt] font-bold">
+                <span class="text-slate-700">Sub Total</span> <!-- Grand Total maps to 'Sub Total' in this layout -->
+                <span class="text-slate-900" id="preview-grand-total">0.00</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Footer Details: Words / Signature / Decl -->
+          <div class="mt-4">
+            <div class="text-[8.5pt] mb-4">
+              <span class="font-bold text-slate-700">Chargable Amount (In Words):</span>
+              <span class="text-slate-800 block mt-0.5 font-medium leading-snug" id="preview-words">—</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mt-6 items-start">
+              <!-- Declaration -->
+              <div class="text-[8pt] text-slate-600 leading-normal">
+                <span class="font-bold text-slate-700 block mb-0.5">Declaration:</span>
+                <span id="preview-declaration-text">We declare that this invoice shows the actual price of the goods described and that all particular's are true and correct.</span>
+              </div>
+              
+              <!-- Signature Area -->
+              <div class="text-right flex flex-col items-end relative min-w-[220px]">
+                <span class="text-[8.5pt] font-bold text-slate-800 leading-tight block mb-12" id="preview-authorized-company">For Overall Medical Equipment's Solution</span>
+                <img id="preview-seal-img" src="seal.jpg" alt="Seal Stamp" class="absolute right-4 top-2 w-[70px] h-[70px] object-contain opacity-85 mix-blend-multiply pointer-events-none" onerror="this.style.display='none';">
+                <span class="text-[8pt] text-slate-500 border-t border-slate-300 pt-1 w-44 text-center block z-10">Authorized Signatory</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sticky absolute bottom footer address ribbon -->
+          <div class="absolute bottom-0 left-0 right-0 bg-brandBlue text-white text-center py-2.5 px-4 text-[7.5pt] font-semibold tracking-wide" id="preview-address-footer">
+            Office Add. Near Om Neelam Hotel, PTS Road, Rewa Mp. Pin Code - 486001, email: omsindia@gmail.com - 9630059578
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Main JavaScript -->
+  <script src="images_base64.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>

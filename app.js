@@ -364,6 +364,35 @@ function render() {
     previewTableBody.appendChild(tr);
   });
 
+  // Fill preview table with blank rows to enforce consistent height (11 rows min)
+  let currentRows = calc.items.length;
+  const minRows = 11;
+  while (currentRows < minRows) {
+    const tr = document.createElement('tr');
+    if (invoiceState.docType === 'invoice') {
+      tr.innerHTML = `
+        <td class="text-center font-medium">&nbsp;</td>
+        <td>&nbsp;</td>
+        <td class="text-center">&nbsp;</td>
+        <td class="text-center">&nbsp;</td>
+        <td class="text-right">&nbsp;</td>
+        <td class="text-center">&nbsp;</td>
+        <td class="text-right font-semibold">&nbsp;</td>
+      `;
+    } else {
+      tr.innerHTML = `
+        <td class="text-center font-medium">&nbsp;</td>
+        <td>&nbsp;</td>
+        <td class="text-center">&nbsp;</td>
+        <td class="text-right">&nbsp;</td>
+        <td class="text-center">&nbsp;</td>
+        <td class="text-right font-semibold">&nbsp;</td>
+      `;
+    }
+    previewTableBody.appendChild(tr);
+    currentRows++;
+  }
+
   // Totals & Bank
   document.getElementById('preview-total-amount').innerText = formatIndianCurrency(calc.subtotal);
   document.getElementById('preview-cgst-percent').innerText = `${invoiceState.taxRate}%`;
@@ -459,7 +488,11 @@ function debouncedRender() {
 
 // Editor Event handlers
 function updateField(section, key, value) {
-  invoiceState[section][key] = value;
+  if (key === null || key === undefined) {
+    invoiceState[section] = section === 'taxRate' ? (parseFloat(value) || 0) : value;
+  } else {
+    invoiceState[section][key] = value;
+  }
   debouncedRender();
 }
 
@@ -649,6 +682,16 @@ function downloadInvoicePDF() {
       4: { cellWidth: 14, halign: 'center' }, // Per
       5: { cellWidth: 28, halign: 'right', fontStyle: 'bold' } // Amount
     };
+  }
+
+  // Fill table with blank lines to enforce a consistent height (11 rows min)
+  const minRows = 11;
+  while (tableData.length < minRows) {
+    if (invoiceState.docType === 'invoice') {
+      tableData.push(['', '', '', '', '', '', '']);
+    } else {
+      tableData.push(['', '', '', '', '', '']);
+    }
   }
 
   doc.autoTable({

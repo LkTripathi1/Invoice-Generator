@@ -10,11 +10,11 @@ function checkAuth() {
   const loginOverlay = document.getElementById("login-overlay");
   if (isLoggedIn) {
     if (loginOverlay) {
-      loginOverlay.classList.add("opacity-0", "pointer-events-none");
+      loginOverlay.classList.add("opacity-0", "pointer-events-none", "hidden");
     }
   } else {
     if (loginOverlay) {
-      loginOverlay.classList.remove("opacity-0", "pointer-events-none");
+      loginOverlay.classList.remove("opacity-0", "pointer-events-none", "hidden");
     }
   }
 }
@@ -39,6 +39,10 @@ function handleLogin(event) {
     const loginOverlay = document.getElementById("login-overlay");
     if (loginOverlay) {
       loginOverlay.classList.add("opacity-0", "pointer-events-none");
+      // Add hidden display style after CSS transition completes
+      setTimeout(() => {
+        loginOverlay.classList.add("hidden");
+      }, 500);
     }
   } else {
     // Display error message
@@ -442,15 +446,26 @@ function formatDateString(dateStr) {
   return dateStr;
 }
 
+// Debounce timer for grouping rapid keypresses
+let renderTimeout = null;
+function debouncedRender() {
+  if (renderTimeout) {
+    clearTimeout(renderTimeout);
+  }
+  renderTimeout = setTimeout(() => {
+    render();
+  }, 250); // 250ms delay is perfect: visually real-time, but groups rapid typing
+}
+
 // Editor Event handlers
 function updateField(section, key, value) {
   invoiceState[section][key] = value;
-  render();
+  debouncedRender();
 }
 
 function updateMetaField(key, value) {
   invoiceState.meta[key] = value;
-  render();
+  debouncedRender();
 }
 
 function updateItemField(id, key, value) {
@@ -464,7 +479,7 @@ function updateItemField(id, key, value) {
     }
     return item;
   });
-  render();
+  debouncedRender();
 }
 
 function removeItem(id) {

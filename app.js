@@ -214,31 +214,38 @@ function getCalculatedValues() {
   };
 }
 
+// Helper to safely set input value without losing cursor position or closing the keyboard
+function safeSetVal(id, val) {
+  const el = document.getElementById(id);
+  if (el && document.activeElement !== el) {
+    el.value = val;
+  }
+}
+
 // Render the form and the live preview
 function render() {
   const calc = getCalculatedValues();
 
-  // 1. Render Editor Panel State
-  const billNumberInput = document.getElementById('input-billNumber');
-  if (billNumberInput) billNumberInput.value = invoiceState.meta.billNumber;
-  document.getElementById('input-dateOfIssue').value = invoiceState.meta.dateOfIssue;
-  document.getElementById('input-quotationNo').value = invoiceState.meta.quotationNo;
-  document.getElementById('input-buyerName').value = invoiceState.buyer.name;
-  document.getElementById('input-buyerAddress').value = invoiceState.buyer.address;
-  document.getElementById('input-buyerGstin').value = invoiceState.buyer.gstin;
-  document.getElementById('input-taxRate').value = invoiceState.taxRate;
+  // 1. Render Editor Panel State safely
+  safeSetVal('input-billNumber', invoiceState.meta.billNumber);
+  safeSetVal('input-dateOfIssue', invoiceState.meta.dateOfIssue);
+  safeSetVal('input-quotationNo', invoiceState.meta.quotationNo);
+  safeSetVal('input-buyerName', invoiceState.buyer.name);
+  safeSetVal('input-buyerAddress', invoiceState.buyer.address);
+  safeSetVal('input-buyerGstin', invoiceState.buyer.gstin);
+  safeSetVal('input-taxRate', invoiceState.taxRate);
 
-  // Supplier Settings
-  document.getElementById('input-supplierGstin').value = invoiceState.supplier.gstin;
-  document.getElementById('input-supplierName').value = invoiceState.supplier.name;
-  document.getElementById('input-supplierSubName').value = invoiceState.supplier.subName;
-  document.getElementById('input-supplierAddress').value = invoiceState.supplier.address;
-  document.getElementById('input-supplierPinCode').value = invoiceState.supplier.pinCode;
-  document.getElementById('input-supplierEmail').value = invoiceState.supplier.email;
-  document.getElementById('input-supplierPhone').value = invoiceState.supplier.phone;
-  document.getElementById('input-bankName').value = invoiceState.supplier.bankName;
-  document.getElementById('input-accountNo').value = invoiceState.supplier.accountNo;
-  document.getElementById('input-branchIfsc').value = invoiceState.supplier.branchIfsc;
+  // Supplier Settings safely
+  safeSetVal('input-supplierGstin', invoiceState.supplier.gstin);
+  safeSetVal('input-supplierName', invoiceState.supplier.name);
+  safeSetVal('input-supplierSubName', invoiceState.supplier.subName);
+  safeSetVal('input-supplierAddress', invoiceState.supplier.address);
+  safeSetVal('input-supplierPinCode', invoiceState.supplier.pinCode);
+  safeSetVal('input-supplierEmail', invoiceState.supplier.email);
+  safeSetVal('input-supplierPhone', invoiceState.supplier.phone);
+  safeSetVal('input-bankName', invoiceState.supplier.bankName);
+  safeSetVal('input-accountNo', invoiceState.supplier.accountNo);
+  safeSetVal('input-branchIfsc', invoiceState.supplier.branchIfsc);
 
   // Update Segmented Control Button Classes
   const invoiceBtn = document.getElementById('btn-docType-invoice');
@@ -272,46 +279,7 @@ function render() {
     if (metadataGrid) metadataGrid.className = "grid grid-cols-1 gap-4";
   }
 
-  // Render items rows in Form Editor
-  const itemsContainer = document.getElementById('editor-items-container');
-  itemsContainer.innerHTML = '';
-  
-  invoiceState.items.forEach((item, index) => {
-    const row = document.createElement('div');
-    row.className = 'grid grid-cols-12 gap-2 p-3 bg-slate-800/40 rounded-lg border border-slate-700/50 relative group fade-in';
-    row.innerHTML = `
-      <div class="col-span-12 ${invoiceState.docType === 'invoice' ? 'md:col-span-4' : 'md:col-span-6'}">
-        <label class="block text-xs text-slate-400 font-semibold mb-1">Description</label>
-        <textarea class="w-full custom-input px-3 py-1.5 text-sm rounded-md h-12 resize-none" oninput="updateItemField(${item.id}, 'desc', this.value)">${item.desc}</textarea>
-      </div>
-      ${invoiceState.docType === 'invoice' ? `
-      <div class="col-span-4 md:col-span-2">
-        <label class="block text-xs text-slate-400 font-semibold mb-1">HSN/SAC</label>
-        <input type="text" class="w-full custom-input px-3 py-1.5 text-sm rounded-md" value="${item.hsn || ''}" oninput="updateItemField(${item.id}, 'hsn', this.value)">
-      </div>
-      ` : ''}
-      <div class="col-span-4 md:col-span-2">
-        <label class="block text-xs text-slate-400 font-semibold mb-1">Qty</label>
-        <input type="number" step="any" class="w-full custom-input px-3 py-1.5 text-sm rounded-md" value="${item.qty}" oninput="updateItemField(${item.id}, 'qty', this.value)">
-      </div>
-      <div class="col-span-4 md:col-span-2">
-        <label class="block text-xs text-slate-400 font-semibold mb-1">Rate</label>
-        <input type="number" step="any" class="w-full custom-input px-3 py-1.5 text-sm rounded-md" value="${item.rate}" oninput="updateItemField(${item.id}, 'rate', this.value)">
-      </div>
-      <div class="col-span-4 md:col-span-1">
-        <label class="block text-xs text-slate-400 font-semibold mb-1">Per</label>
-        <input type="text" class="w-full custom-input px-3 py-1.5 text-sm rounded-md" value="${item.per}" oninput="updateItemField(${item.id}, 'per', this.value)">
-      </div>
-      <div class="col-span-8 md:col-span-1 flex items-end justify-end">
-        <button class="p-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 rounded-md border border-rose-500/20 transition duration-200" onclick="removeItem(${item.id})" title="Delete Item">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-          </svg>
-        </button>
-      </div>
-    `;
-    itemsContainer.appendChild(row);
-  });
+  // Note: Editor items rows are rendered separately by renderEditorItems() to prevent losing input focus.
 
   // 2. Render Live Preview A4 Card
   document.getElementById('preview-gstin').innerText = invoiceState.supplier.gstin;
@@ -424,6 +392,51 @@ function render() {
   document.getElementById('preview-address-footer').innerText = `Office Add. ${invoiceState.supplier.address} Pin Code - ${invoiceState.supplier.pinCode}, email: ${invoiceState.supplier.email} - ${invoiceState.supplier.phone}`;
 }
 
+// Render the editor's item inputs. This is only called when items are added, removed, or columns are switched
+// to prevent rebuilding the DOM inputs on every keystroke, which causes input focus loss (and closes the mobile keyboard).
+function renderEditorItems() {
+  const itemsContainer = document.getElementById('editor-items-container');
+  if (!itemsContainer) return;
+  itemsContainer.innerHTML = '';
+  
+  invoiceState.items.forEach((item, index) => {
+    const row = document.createElement('div');
+    row.className = 'grid grid-cols-12 gap-2 p-3 bg-slate-800/40 rounded-lg border border-slate-700/50 relative group fade-in';
+    row.innerHTML = `
+      <div class="col-span-12 ${invoiceState.docType === 'invoice' ? 'md:col-span-4' : 'md:col-span-6'}">
+        <label class="block text-xs text-slate-400 font-semibold mb-1">Description</label>
+        <textarea class="w-full custom-input px-3 py-1.5 text-sm rounded-md h-12 resize-none" oninput="updateItemField(${item.id}, 'desc', this.value)">${item.desc}</textarea>
+      </div>
+      ${invoiceState.docType === 'invoice' ? `
+      <div class="col-span-4 md:col-span-2">
+        <label class="block text-xs text-slate-400 font-semibold mb-1">HSN/SAC</label>
+        <input type="text" class="w-full custom-input px-3 py-1.5 text-sm rounded-md" value="${item.hsn || ''}" oninput="updateItemField(${item.id}, 'hsn', this.value)">
+      </div>
+      ` : ''}
+      <div class="col-span-4 md:col-span-2">
+        <label class="block text-xs text-slate-400 font-semibold mb-1">Qty</label>
+        <input type="number" step="any" class="w-full custom-input px-3 py-1.5 text-sm rounded-md" value="${item.qty}" oninput="updateItemField(${item.id}, 'qty', this.value)">
+      </div>
+      <div class="col-span-4 md:col-span-2">
+        <label class="block text-xs text-slate-400 font-semibold mb-1">Rate</label>
+        <input type="number" step="any" class="w-full custom-input px-3 py-1.5 text-sm rounded-md" value="${item.rate}" oninput="updateItemField(${item.id}, 'rate', this.value)">
+      </div>
+      <div class="col-span-4 md:col-span-1">
+        <label class="block text-xs text-slate-400 font-semibold mb-1">Per</label>
+        <input type="text" class="w-full custom-input px-3 py-1.5 text-sm rounded-md" value="${item.per}" oninput="updateItemField(${item.id}, 'per', this.value)">
+      </div>
+      <div class="col-span-8 md:col-span-1 flex items-end justify-end">
+        <button class="p-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 rounded-md border border-rose-500/20 transition duration-200" onclick="removeItem(${item.id})" title="Delete Item">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </button>
+      </div>
+    `;
+    itemsContainer.appendChild(row);
+  });
+}
+
 function formatDateString(dateStr) {
   if (!dateStr) return '—';
   const parts = dateStr.split('-');
@@ -464,6 +477,7 @@ function removeItem(id) {
     return;
   }
   invoiceState.items = invoiceState.items.filter(item => item.id !== id);
+  renderEditorItems();
   render();
 }
 
@@ -477,6 +491,7 @@ function addNewItem() {
     rate: 0,
     per: "Nos"
   });
+  renderEditorItems();
   render();
 }
 
@@ -762,6 +777,7 @@ function downloadInvoicePDF() {
 // Switch Document Type handler
 function switchDocType(type) {
   invoiceState.docType = type;
+  renderEditorItems();
   render();
 }
 
@@ -777,5 +793,6 @@ window.switchDocType = switchDocType;
 // Initialize on DOM load
 document.addEventListener("DOMContentLoaded", () => {
   checkAuth();
+  renderEditorItems();
   render();
 });

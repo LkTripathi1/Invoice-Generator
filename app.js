@@ -281,6 +281,31 @@ function render() {
 
   // Note: Editor items rows are rendered separately by renderEditorItems() to prevent losing input focus.
 
+  // 1. Update titles & labels dynamically based on docType
+  document.title = invoiceState.docType === 'invoice' 
+    ? 'OVERALL Medical - Professional Tax Invoice Generator' 
+    : 'OVERALL Medical - Professional Quotation Generator';
+
+  const headerDocType = document.getElementById('header-doc-type');
+  if (headerDocType) {
+    headerDocType.innerText = invoiceState.docType === 'invoice' ? 'Invoice Generator' : 'Quotation Generator';
+  }
+
+  const editorPanelTitle = document.getElementById('editor-panel-title');
+  if (editorPanelTitle) {
+    editorPanelTitle.innerHTML = `<span class="inline-block w-1 h-6 bg-indigo-500 rounded"></span> ${invoiceState.docType === 'invoice' ? 'Invoice Details Editor' : 'Quotation Details Editor'}`;
+  }
+
+  const editorBuyerLabel = document.getElementById('editor-buyer-label');
+  if (editorBuyerLabel) {
+    editorBuyerLabel.innerText = invoiceState.docType === 'invoice' ? '2. Buyer (Bill To) Information' : '2. Buyer (Quote To) Information';
+  }
+
+  const previewBuyerLabel = document.getElementById('preview-buyer-label');
+  if (previewBuyerLabel) {
+    previewBuyerLabel.innerText = invoiceState.docType === 'invoice' ? 'Buyer (Bill To)' : 'Buyer (Quote To)';
+  }
+
   // 2. Render Live Preview A4 Card
   document.getElementById('preview-gstin').innerText = invoiceState.supplier.gstin;
   document.getElementById('preview-supplier-name-bold').innerText = invoiceState.supplier.name;
@@ -317,21 +342,21 @@ function render() {
   if (invoiceState.docType === 'invoice') {
     tableHeaderRow.innerHTML = `
       <th class="w-[6%]">SN</th>
-      <th class="w-[50%]">Description of Goods</th>
-      <th class="w-[12%]">HSN/SAC</th>
+      <th class="w-[44%]">Description of Goods</th>
+      <th class="w-[10%]">HSN/SAC</th>
       <th class="w-[8%]">Quantity</th>
       <th class="w-[12%]">Rate</th>
-      <th class="w-[7%]">Per</th>
-      <th class="w-[15%] text-right">Amount</th>
+      <th class="w-[6%]">Per</th>
+      <th class="w-[14%] text-right">Amount</th>
     `;
   } else {
     tableHeaderRow.innerHTML = `
       <th class="w-[6%]">SN</th>
-      <th class="w-[62%]">Description of Goods</th>
-      <th class="w-[8%]">Quantity</th>
-      <th class="w-[12%]">Rate</th>
-      <th class="w-[7%]">Per</th>
-      <th class="w-[15%] text-right">Amount</th>
+      <th class="w-[44%]">Description of Goods</th>
+      <th class="w-[10%]">Quantity</th>
+      <th class="w-[16%]">Rate</th>
+      <th class="w-[8%]">Per</th>
+      <th class="w-[16%] text-right">Amount</th>
     `;
   }
 
@@ -364,9 +389,9 @@ function render() {
     previewTableBody.appendChild(tr);
   });
 
-  // Fill preview table with blank rows to enforce consistent height (11 rows min)
+  // Fill preview table with blank rows to enforce consistent height (8 rows min)
   let currentRows = calc.items.length;
-  const minRows = 11;
+  const minRows = 8;
   while (currentRows < minRows) {
     const tr = document.createElement('tr');
     if (invoiceState.docType === 'invoice') {
@@ -596,7 +621,8 @@ function downloadInvoicePDF() {
   // Buyer Column Info (shifted down 11mm)
   doc.setFontSize(9.5);
   doc.setFont("Helvetica", "bold");
-  doc.text("Buyer (Bill To)", 16, 48);
+  const buyerLabel = invoiceState.docType === 'invoice' ? 'Buyer (Bill To)' : 'Buyer (Quote To)';
+  doc.text(buyerLabel, 16, 48);
   doc.setFont("Helvetica", "normal");
   
   // Handle multi-line buyer name and address (shifted down 11mm)
@@ -657,12 +683,12 @@ function downloadInvoicePDF() {
     ]);
     columnStyles = {
       0: { cellWidth: 10, halign: 'center' }, // SN
-      1: { cellWidth: 78, halign: 'left', fontStyle: 'bold' }, // Description
-      2: { cellWidth: 18, halign: 'center' }, // HSN
-      3: { cellWidth: 18, halign: 'center' }, // Qty
-      4: { cellWidth: 26, halign: 'right' }, // Rate
-      5: { cellWidth: 14, halign: 'center' }, // Per
-      6: { cellWidth: 28, halign: 'right', fontStyle: 'bold' } // Amount
+      1: { cellWidth: 81, halign: 'left', fontStyle: 'bold' }, // Description
+      2: { cellWidth: 16, halign: 'center' }, // HSN
+      3: { cellWidth: 15, halign: 'center' }, // Qty
+      4: { cellWidth: 22, halign: 'right' }, // Rate
+      5: { cellWidth: 12, halign: 'center' }, // Per
+      6: { cellWidth: 26, halign: 'right', fontStyle: 'bold' } // Amount
     };
   } else {
     tableHeaders = [['SN', 'Description of Goods', 'Quantity', 'Rate', 'Per', 'Amount']];
@@ -676,16 +702,16 @@ function downloadInvoicePDF() {
     ]);
     columnStyles = {
       0: { cellWidth: 10, halign: 'center' }, // SN
-      1: { cellWidth: 96, halign: 'left', fontStyle: 'bold' }, // Description
+      1: { cellWidth: 81, halign: 'left', fontStyle: 'bold' }, // Description
       2: { cellWidth: 18, halign: 'center' }, // Qty
-      3: { cellWidth: 26, halign: 'right' }, // Rate
-      4: { cellWidth: 14, halign: 'center' }, // Per
-      5: { cellWidth: 28, halign: 'right', fontStyle: 'bold' } // Amount
+      3: { cellWidth: 28, halign: 'right' }, // Rate
+      4: { cellWidth: 15, halign: 'center' }, // Per
+      5: { cellWidth: 30, halign: 'right', fontStyle: 'bold' } // Amount
     };
   }
 
-  // Fill table with blank lines to enforce a consistent height (11 rows min)
-  const minRows = 11;
+  // Fill table with blank lines to enforce a consistent height (8 rows min)
+  const minRows = 8;
   while (tableData.length < minRows) {
     if (invoiceState.docType === 'invoice') {
       tableData.push(['', '', '', '', '', '', '']);
@@ -695,7 +721,7 @@ function downloadInvoicePDF() {
   }
 
   doc.autoTable({
-    startY: 85,
+    startY: 81,
     head: tableHeaders,
     body: tableData,
     theme: 'grid',
@@ -720,13 +746,13 @@ function downloadInvoicePDF() {
     didDrawCell: (data) => {}
   });
 
-  const finalY = doc.lastAutoTable.finalY || 95;
+  const finalY = doc.lastAutoTable.finalY;
 
   // --- BANK & TOTALS SECTION ---
   // Table border grid beneath the main table
   doc.setLineWidth(0.3);
   doc.rect(14, finalY, 182, 32); // Outer rect
-  doc.line(100, finalY, 100, finalY + 32); // Vertical divide
+  doc.line(105, finalY, 105, finalY + 32); // Vertical divide at 50% split (14 + 91 = 105)
 
   // Bank Info (Left Side)
   doc.setFontSize(8.5);
@@ -749,33 +775,33 @@ function downloadInvoicePDF() {
 
   // Totals Info (Right Side)
   // Sub-lines for totals grid
-  doc.line(100, finalY + 8, 196, finalY + 8);
-  doc.line(100, finalY + 16, 196, finalY + 16);
-  doc.line(100, finalY + 24, 196, finalY + 24);
+  doc.line(105, finalY + 8, 196, finalY + 8);
+  doc.line(105, finalY + 16, 196, finalY + 16);
+  doc.line(105, finalY + 24, 196, finalY + 24);
   
   // Total label, CGST, SGST, Subtotal columns vertical lines
   doc.line(150, finalY, 150, finalY + 32);
 
   doc.setFontSize(9);
   doc.setFont("Helvetica", "normal");
-  doc.text("Total Amount", 102, finalY + 5.5);
+  doc.text("Total Amount", 107, finalY + 5.5);
   doc.setFont("Helvetica", "bold");
   doc.text(formatIndianCurrency(calc.subtotal), 194, finalY + 5.5, { align: 'right' });
 
   doc.setFont("Helvetica", "normal");
-  doc.text(`CGST ${invoiceState.taxRate}%`, 102, finalY + 13.5);
+  doc.text(`CGST ${invoiceState.taxRate}%`, 107, finalY + 13.5);
   doc.text(formatIndianCurrency(calc.cgstAmount), 194, finalY + 13.5, { align: 'right' });
 
   doc.setFont("Helvetica", "normal");
-  doc.text(`SGST ${invoiceState.taxRate}%`, 102, finalY + 21.5);
+  doc.text(`SGST ${invoiceState.taxRate}%`, 107, finalY + 21.5);
   doc.text(formatIndianCurrency(calc.sgstAmount), 194, finalY + 21.5, { align: 'right' });
 
   doc.setFont("Helvetica", "bold");
-  doc.text("Sub Total", 102, finalY + 29.5); // This corresponds to Grand Total in the overall layout
+  doc.text("Sub Total", 107, finalY + 29.5);
   doc.text(formatIndianCurrency(calc.grandTotal), 194, finalY + 29.5, { align: 'right' });
 
   // --- FOOTER SECTION ---
-  let footerY = finalY + 37;
+  let footerY = finalY + 35;
 
   // Words amount
   doc.setFontSize(8.5);
@@ -786,7 +812,7 @@ function downloadInvoicePDF() {
   doc.text(wordsLines, 14, footerY + 4.5);
 
   // Declaration (Left) and Authorized Signatory (Right)
-  const signatureY = footerY + 17;
+  const signatureY = footerY + 12;
   doc.setFont("Helvetica", "bold");
   doc.text("Declaration :", 14, signatureY);
   doc.setFont("Helvetica", "normal");
@@ -810,7 +836,7 @@ function downloadInvoicePDF() {
   
   doc.setFont("Helvetica", "normal");
   doc.setFontSize(8);
-  doc.text("Authorized Signatory", 196, signatureY + 16, { align: 'right' });
+  doc.text("Authorized Signatory", 196, signatureY + 10, { align: 'right' });
 
   // Bottom blue ribbon at absolute bottom of page (full-bleed edge-to-edge)
   const footerAddressLine = `Office Add. ${invoiceState.supplier.address} Pin Code - ${invoiceState.supplier.pinCode}, email: ${invoiceState.supplier.email} - ${invoiceState.supplier.phone}`;

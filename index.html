@@ -102,7 +102,7 @@
         </div>
         <div>
           <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-1">
-            OVERALL <span class="text-indigo-400 font-medium text-sm">Invoice Generator</span>
+            OVERALL <span id="header-doc-type" class="text-indigo-400 font-medium text-sm">Invoice Generator</span>
           </h1>
           <p class="text-xs text-slate-400">Create & download professional tax invoices instantly</p>
         </div>
@@ -172,7 +172,7 @@
 
       <!-- Section 2: Buyer details -->
       <div class="glass-panel rounded-2xl p-5 shadow-xl flex flex-col gap-4">
-        <h3 class="text-sm font-bold text-indigo-400 tracking-wider uppercase">2. Buyer (Bill To) Information</h3>
+        <h3 id="editor-buyer-label" class="text-sm font-bold text-indigo-400 tracking-wider uppercase">2. Buyer (Bill To) Information</h3>
         <div>
           <label for="input-buyerName" class="block text-xs font-semibold text-slate-400 mb-1.5">Buyer Name / Institution</label>
           <input type="text" id="input-buyerName" oninput="updateField('buyer', 'name', this.value)" class="w-full custom-input px-3.5 py-2 rounded-xl text-sm" placeholder="e.g. Hospital Name">
@@ -313,88 +313,90 @@
 
           <!-- Invoice Title Header -->
           <div class="text-center my-3">
-            <h2 class="text-[13pt] font-bold text-slate-800 uppercase tracking-widest border-b-2 border-slate-800 inline-block px-4 pb-0.5">Tax invoice</h2>
+            <h2 id="preview-doc-title" class="text-[13pt] font-bold text-slate-800 uppercase tracking-widest border-b-2 border-slate-800 inline-block px-4 pb-0.5">Tax invoice</h2>
           </div>
 
-          <!-- Meta Blocks Info (Buyer on Left, Metadata on Right) -->
-          <div class="grid grid-cols-2 gap-4 mb-4 mt-2">
-            <!-- Buyer Block -->
-            <div class="border border-slate-300 p-2.5 rounded min-h-[95px] flex flex-col justify-start">
-              <span class="text-[8.5pt] font-bold text-slate-600 block mb-1">Buyer (Bill To)</span>
-              <span class="text-[9.5pt] font-bold text-slate-800 leading-tight block" id="preview-buyer-name">Saudamini Multispeciality Hospital,Rewa</span>
-              <span class="text-[9pt] text-slate-700 leading-normal mt-1 block" id="preview-buyer-address">Madhyapradesh - 486001</span>
-              <span class="text-[9pt] font-bold text-slate-800 mt-1 block" id="preview-buyer-gstin">(GSTIN -23ABPCS9276F1ZT )</span>
-            </div>
-            
-            <!-- Metadata details -->
-            <div class="border border-slate-300 p-2.5 rounded min-h-[95px] flex flex-col justify-between">
-              <div class="flex justify-between items-center text-[9pt]">
-                <span class="font-bold text-slate-600">Bill Number :</span>
-                <span class="font-bold text-slate-900" id="preview-bill-number">0032</span>
+          <!-- Unified Grid Layout Container -->
+          <div class="border border-slate-300 rounded-lg overflow-hidden mt-4">
+            <!-- Meta Blocks Info (Buyer on Left, Metadata on Right) -->
+            <div class="grid grid-cols-2 divide-x divide-slate-300">
+              <!-- Buyer Block -->
+              <div class="p-2.5 min-h-[95px] flex flex-col justify-start">
+                <span id="preview-buyer-label" class="text-[8.5pt] font-bold text-slate-600 block mb-1">Buyer (Bill To)</span>
+                <span class="text-[9.5pt] font-bold text-slate-800 leading-tight block" id="preview-buyer-name">Saudamini Multispeciality Hospital,Rewa</span>
+                <span class="text-[9pt] text-slate-700 leading-normal mt-1 block" id="preview-buyer-address">Madhyapradesh - 486001</span>
+                <span class="text-[9pt] font-bold text-slate-800 mt-1 block" id="preview-buyer-gstin">(GSTIN -23ABPCS9276F1ZT )</span>
               </div>
-              <div class="flex justify-between items-center text-[9pt]">
-                <span class="font-bold text-slate-600">Date of Issue :</span>
-                <span class="font-medium text-slate-900" id="preview-date-issue">29-03-2026</span>
-              </div>
-              <div class="flex justify-between items-center text-[9pt]">
-                <span class="font-bold text-slate-600">Quotation No :</span>
-                <span class="font-medium text-slate-900" id="preview-quotation-no">—</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Product Table Area -->
-          <div class="min-h-[300px] border border-slate-300 rounded overflow-hidden">
-            <table>
-              <thead>
-                <tr id="preview-table-header">
-                  <!-- Rendered dynamically by app.js based on docType -->
-                </tr>
-              </thead>
-              <tbody id="preview-table-body" class="divide-y divide-slate-200">
-                <!-- Dynamically rendered by app.js -->
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Calculations and Bank Info Blocks -->
-          <div class="grid grid-cols-2 mt-4 border border-slate-300 rounded overflow-hidden">
-            
-            <!-- Bank Details (Left Panel) -->
-            <div class="p-3 border-r border-slate-300 flex flex-col justify-start">
-              <span class="text-[8.5pt] font-bold text-slate-700 block mb-2 border-b border-slate-200 pb-1">Company's Bank Details</span>
               
-              <div class="flex items-center gap-1.5 text-[8.5pt] mb-1.5">
-                <span class="font-bold text-slate-600">Bank Name:</span>
-                <span class="font-medium text-slate-800" id="preview-bank-name">Indian Bank</span>
-              </div>
-              <div class="flex items-center gap-1.5 text-[8.5pt] mb-1.5">
-                <span class="font-bold text-slate-600">A/C No.:</span>
-                <span class="font-bold text-slate-800" id="preview-account-number">8125428573</span>
-              </div>
-              <div class="flex items-center gap-1.5 text-[8.5pt]">
-                <span class="font-bold text-slate-600">Branch & IFSC:</span>
-                <span class="font-medium text-slate-800" id="preview-branch-ifsc">Amarpatan & IDIB000A592</span>
+              <!-- Metadata details -->
+              <div class="p-2.5 min-h-[95px] flex flex-col justify-between">
+                <div id="preview-meta-bill-container" class="flex justify-between items-center text-[9pt]">
+                  <span class="font-bold text-slate-600">Bill Number :</span>
+                  <span class="font-bold text-slate-900" id="preview-bill-number">0032</span>
+                </div>
+                <div class="flex justify-between items-center text-[9pt]">
+                  <span id="preview-meta-date-label" class="font-bold text-slate-600">Date of Issue :</span>
+                  <span class="font-medium text-slate-900" id="preview-date-issue">29-03-2026</span>
+                </div>
+                <div class="flex justify-between items-center text-[9pt]">
+                  <span id="preview-meta-quot-label" class="font-bold text-slate-600">Quotation No :</span>
+                  <span class="font-medium text-slate-900" id="preview-quotation-no">—</span>
+                </div>
               </div>
             </div>
 
-            <!-- Tax Computations (Right Panel) -->
-            <div class="divide-y divide-slate-300">
-              <div class="flex justify-between items-center px-3 py-1.5 text-[9pt]">
-                <span class="font-medium text-slate-600">Total Amount</span>
-                <span class="font-bold text-slate-900" id="preview-total-amount">0.00</span>
+            <!-- Product Table Area -->
+            <div class="min-h-[300px] border-t border-slate-300">
+              <table class="w-full border-collapse">
+                <thead>
+                  <tr id="preview-table-header" class="border-b border-slate-300">
+                    <!-- Rendered dynamically by app.js based on docType -->
+                  </tr>
+                </thead>
+                <tbody id="preview-table-body" class="divide-y divide-slate-200">
+                  <!-- Dynamically rendered by app.js -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Calculations and Bank Info Blocks -->
+            <div class="grid grid-cols-2 divide-x divide-slate-300 border-t border-slate-300">
+              <!-- Bank Details (Left Panel) -->
+              <div class="p-3 flex flex-col justify-start">
+                <span class="text-[8.5pt] font-bold text-slate-700 block mb-2 border-b border-slate-200 pb-1">Company's Bank Details</span>
+                
+                <div class="flex items-center gap-1.5 text-[8.5pt] mb-1.5">
+                  <span class="font-bold text-slate-600">Bank Name:</span>
+                  <span class="font-medium text-slate-800" id="preview-bank-name">Indian Bank</span>
+                </div>
+                <div class="flex items-center gap-1.5 text-[8.5pt] mb-1.5">
+                  <span class="font-bold text-slate-600">A/C No.:</span>
+                  <span class="font-bold text-slate-800" id="preview-account-number">8125428573</span>
+                </div>
+                <div class="flex items-center gap-1.5 text-[8.5pt]">
+                  <span class="font-bold text-slate-600">Branch & IFSC:</span>
+                  <span class="font-medium text-slate-800" id="preview-branch-ifsc">Amarpatan & IDIB000A592</span>
+                </div>
               </div>
-              <div class="flex justify-between items-center px-3 py-1.5 text-[9pt]">
-                <span class="font-medium text-slate-600">CGST (<span id="preview-cgst-percent">2.5%</span>)</span>
-                <span class="font-semibold text-slate-800" id="preview-cgst-amount">0.00</span>
-              </div>
-              <div class="flex justify-between items-center px-3 py-1.5 text-[9pt]">
-                <span class="font-medium text-slate-600">SGST (<span id="preview-sgst-percent">2.5%</span>)</span>
-                <span class="font-semibold text-slate-800" id="preview-sgst-amount">0.00</span>
-              </div>
-              <div class="flex justify-between items-center px-3 py-2 bg-slate-50 text-[9.5pt] font-bold">
-                <span class="text-slate-700">Sub Total</span> <!-- Grand Total maps to 'Sub Total' in this layout -->
-                <span class="text-slate-900" id="preview-grand-total">0.00</span>
+
+              <!-- Tax Computations (Right Panel) -->
+              <div class="divide-y divide-slate-300">
+                <div class="flex justify-between items-center px-3 py-1.5 text-[9pt]">
+                  <span class="font-medium text-slate-600">Total Amount</span>
+                  <span class="font-bold text-slate-900" id="preview-total-amount">0.00</span>
+                </div>
+                <div class="flex justify-between items-center px-3 py-1.5 text-[9pt]">
+                  <span class="font-medium text-slate-600">CGST (<span id="preview-cgst-percent">2.5%</span>)</span>
+                  <span class="font-semibold text-slate-800" id="preview-cgst-amount">0.00</span>
+                </div>
+                <div class="flex justify-between items-center px-3 py-1.5 text-[9pt]">
+                  <span class="font-medium text-slate-600">SGST (<span id="preview-sgst-percent">2.5%</span>)</span>
+                  <span class="font-semibold text-slate-800" id="preview-sgst-amount">0.00</span>
+                </div>
+                <div class="flex justify-between items-center px-3 py-2 bg-slate-50 text-[9.5pt] font-bold">
+                  <span class="text-slate-700">Sub Total</span> <!-- Grand Total maps to 'Sub Total' in this layout -->
+                  <span class="text-slate-900" id="preview-grand-total">0.00</span>
+                </div>
               </div>
             </div>
           </div>
